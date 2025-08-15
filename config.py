@@ -1,1 +1,1 @@
-data_path = "./dataset/updated_data.csv"
+data_path = "./dataset/dataset_v2.csv"

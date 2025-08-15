@@ -66,12 +66,13 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 # class_texts_embeddings = model.encode(data.iloc[:, 1].to_list(), convert_to_tensor=True)
 # torch.save(class_texts_embeddings, "class_embeddings_v2.pt")
 class_texts_embeddings = torch.load("class_embeddings_v2.pt")
+print("Model saved")
 
 
 def get_result(query):
     query_embedding = model.encode(query, convert_to_tensor=True)
     cos_scores = util.cos_sim(query_embedding, class_texts_embeddings)
-    if torch.max(cos_scores) < 0.325:
+    if torch.max(cos_scores) < 0.225:
         return "please enter some specific situation, it is too generic or it is not a sin", torch.max(cos_scores).item()
     else:
         predicted_class = torch.argmax(cos_scores).item()
@@ -85,9 +86,9 @@ def classify_text():
     item = Confessions(user_query=query, predicted_class=result, max_cosine_score=max_cos_score)
     add_data(item)
     if " " not in result:
-        return jsonify({"punishment": result, "description": output_dic.get(result.lower(), "No description available.")})
+        return jsonify({"punishment": result, "description": output_dic.get(result.lower(), "No description available."), "score": max_cos_score})
     else:
-        return jsonify({"punishment": "Bach gya tu", "description": "Maybe!"})
+        return jsonify({"punishment": "Bach gya tu", "description": "Maybe!", "score": max_cos_score})
     
 
 @app.route("/forum", methods=['GET'])
@@ -142,5 +143,5 @@ def get_user_votes():
     return jsonify({"voted": result})
 
 
-# if __name__=="__main__":
-#     app.run(debug=True, host="0.0.0.0", port=5000)
+if __name__=="__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
